@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>123</title>
+  <style>
+    #canvas {
+      border: 1px solid #999;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+
+  <script type="text/javascript">
+    let x = 0,
+      y = 0;
+
+    class sence {
+      constructor() {
+        let canvas = document.querySelector("#canvas")
+        this.ctx = canvas.getContext("2d")
+        this.width = canvas.getBoundingClientRect().width
+        this.height = canvas.getBoundingClientRect().height
+        this.init();
+      }
+      draw(o) {
+        if (o.hasload) {
+          this.ctx.drawImage(o.img, o.x, o.y)
+        }
+      }
+      clearRect() {
+        this.ctx.clearRect(0, 0, this.width, this.height)
+      }
+      init() {
+        // console.log('init');
+      }
+    }
+    let s = new sence();
+    class BaseItem {
+      constructor(imgPath) {
+        this.hasload = false;
+        this.loadImg(imgPath);
+      }
+      loadImg(imgPath) {
+        let img = new Image();
+        img.onload = () => {
+          this.hasload = true
+          this.img = img
+        }
+        img.src = imgPath + ".png"
+      }
+    }
+    class Ball extends BaseItem {
+      constructor(img) {
+        super(img)
+        this.x = 200;
+        this.y = 100;
+        this.speedX = 5;
+        this.speedY = 5;
+        this.fired = false;
+      }
+      move() {
+        console.log(paddle.x);
+        console.log(this.x);
+        
+        if(this.x > s.width - 50 || this.x < 0){
+          this.speedX = -this.speedX;
+        }
+        if(this.y > s.height - 50 || this.y < 0){
+          this.speedY = -this.speedY
+        }
+       
+        this.x += this.speedX;
+        this.y += this.speedY;
+      }
+
+    }
+    class Paddle extends BaseItem {
+      constructor(img) {
+        super(img)
+        this.x = 200,
+          this.y = 300
+      }
+    }
+
+    let ball = new Ball("ball")
+    let paddle = new Paddle("paddle")
+    let img = document.querySelectorAll("image")
+    let ctx = document.querySelector("#canvas").getContext('2d')
+    window.addEventListener('keydown', function (e) {
+      let k = e.key;
+      if (k === 'a') {
+        paddle.x -= 10;
+        // draw()
+      }
+      if (k === 'd') {
+        paddle.x += 10
+        // draw()
+      }
+      if (k === " ") {
+        ball.fired = !ball.fired
+      }
+      if (k === "r") {
+        location.reload()
+      }
+    })
+
+    function draw() {
+      s.clearRect()
+      s.draw(ball)
+      if (ball.fired) {
+        ball.move();
+      }
+      s.draw(paddle)
+      requestAnimationFrame(draw)
+    }
+    draw()
+  </script>
+</body>
+
+</html>
