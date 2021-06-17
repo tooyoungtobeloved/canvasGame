@@ -1,210 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>123</title>
-		<style>
-			#canvas {
-				border: 1px solid #999;
-			}
-		</style>
-	</head>
-	<body>
-		<canvas id="canvas" width="500" height="500"></canvas>
 
-		<script type="text/javascript">
-			let x = 0,
-				y = 0;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>123</title>
+  <style>
+    #canvas {
+      border: 1px solid #999;
+    }
+  </style>
+</head>
 
-			class sence {
-				constructor() {
-					let canvas = document.querySelector("#canvas")
-					this.ctx = canvas.getContext("2d")
-					this.width = canvas.getBoundingClientRect().width
-					this.height = canvas.getBoundingClientRect().height
-					this.score = 0
-					this.lives = 3
-					this.keydowns = {};
-					this.actions = {};
-					this.block = [];
-				}
-				draw(o) {
-					if (o.hasload) {
-						this.ctx.drawImage(o.img, o.x, o.y)
-					}
-				}
-				clearRect() {
-					this.ctx.clearRect(0, 0, this.width, this.height)
-				}
-				init() {
-					this.ctx.fillStyle = "royalblue"
-					this.ctx.font = "20px bolder 黑体 ";
-					this.ctx.textAlign = "right"
-					this.ctx.textBaseline = "top"
-					this.ctx.fillText("你的生命值：" + this.lives, 500, 0);
-					this.ctx.fillStyle = "#000000"
-					this.ctx.fillText("得分：" + this.score, 500, 22);
-					// 初始化砖块
-					
-				}
-				initBlock(){
-					for(let i = 0; i <= 4; i++){
-						this.block[i] = new Block("block")
-					}
-				}
-				registerAction(s, callback) {
-					this.actions[s] = callback.bind(this)
-				}
-				handleActions() {
-					let keys = Object.keys(this.keydowns)
-					if (keys.length == 0) return;
-					keys.forEach(item => {
-						if (!this.actions[item]) return
-						this.actions[item]()
-					})
-				}
-				drawBlock(){
-					for(let i = 0; i <= 4; i++){
-						if(this.block[i].alive){
-							this.draw(this.block[i], this.block[i].x, this.block[i].y)
-							this.block[i].collision()
-						}
-					}
-				}
-			}
-			let s = new sence();
-			class BaseItem {
-				constructor(imgPath) {
-					this.hasload = false;
-					this.loadImg(imgPath);
-				}
-				loadImg(imgPath) {
-					let img = new Image();
-					img.onload = () => {
-						this.hasload = true
-						this.img = img
-					}
-					img.src = imgPath + ".png"
-				}
-			}
-			class Ball extends BaseItem {
-				constructor(img) {
-					super(img)
-					this.x = 110;
-					this.y = 200;
-					this.speedX = 5
-					this.speedY = 5
-					this.fired = false;
-				}
-				move() {
-					if (this.x > s.width - 50 || this.x < 0) {
-						this.speedX = -this.speedX;
-					}
-					if (this.y < 0) {
-						this.speedY = -this.speedY
-					}
-					if(this.y > s.height - 50){
-						s.lives -= 1
-						this.fired = false 
-					}
-					this.x += this.speedX;
-					this.y += this.speedY;
-				}
-
-
-			}
-			class Paddle extends BaseItem {
-				constructor(img) {
-					super(img)
-					this.x = 200;
-					this.y = 350;
-					this.speed = 5
-				}
-				collision() {
-					if ((ball.x + 50 > this.x && ball.x + 50 < this.x + 150) && (ball.y + 50 > this.y && ball.y + 50 < this
-							.y + 20)) {
-						console.log('collsion');
-						ball.speedY = -ball.speedY
-					}
-				}
-				moveLeft() {
-					if (this.x > 0) this.x -= this.speed
-				}
-				moveRight() {
-					if (this.x + 150 + this.speed  < s.width) this.x += this.speed
-				}
-			}
-			
-			class Block extends BaseItem{
-				constructor(img) {
-				    super(img)
-					this.x = this.getRandomX();
-					this.y = this.getRandomY();
-					this.alive = true
-				}
-				getRandomX(){
-					return Math.floor(Math.random() * 320)
-				}
-				getRandomY(){
-					return Math.floor(Math.random() * 100)
-				}
-				collision() {
-					if ((ball.x  > this.x + 20 && ball.x + 20 < this.x + 150) && (ball.y + 50 > this.y && ball.y + 50 < this.y + 20)) {
-						console.log('collsion');
-						this.alive = false;
-						s.score += 1;
-						ball.speedY = -ball.speedY
-					}
-				}
-			}
-			
-			let ctx = document.querySelector("#canvas").getContext('2d');
-			let ball = new Ball("ball");
-			let paddle = new Paddle("paddle");
-			let block = new Block("block")
-			window.addEventListener('keydown', function(e) {
-				let k = e.key;
-				s.keydowns[k] = true
-				if (k === " ") ball.fired = !ball.fired
-			})
-			window.addEventListener('keyup', (e) => {
-				let k = e.key
-				delete s.keydowns[k]
-			})
-
-			s.registerAction('a', function() {
-				paddle.moveLeft()
-			})
-			s.registerAction('d', function() {
-				paddle.moveRight()
-			})
-
-			// s.registerAction(' ', () => {
-			// 	ball.fired = !ball.fired
-			// })
-			s.registerAction('r', () => {
-				location.reload()
-			})
-			s.initBlock()
-			function draw() {
-				// ctx.clearRect(0, 0, 600, 600)
-				s.clearRect()
-				s.init()
-				s.draw(ball)
-				if (ball.fired) {
-					ball.move();
-				}
-				s.drawBlock()
-				s.drawBlock(block)
-				s.draw(paddle)
-				s.handleActions()
-				paddle.collision()
-				
-				requestAnimationFrame(draw)
-				
-			}
-			draw()
-		</script>
-	</body>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script src="level.js"></script>
+  <script src="BaseItem.js"></script>
+  <script src="Ball.js"></script>
+  <script src="Paddle.js"></script>
+  <script src="Block.js"></script>
+  <script src="Game.js"></script>
+  <script src="main.js"></script>
+</body>
 </html>
